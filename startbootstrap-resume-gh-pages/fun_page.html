@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<title>Speedy Builder</title>
+
+<style>
+nav a{
+    color:rgb(216, 120, 10);
+}
+nav a:hover{
+    color: #295ed8;
+}
+
+body{
+background:#2f3438;
+color:rgb(216, 120, 10);
+font-family:Arial;
+text-align:center;
+}
+
+h1{
+margin-top:10px;
+}
+
+.scene{
+position:relative;
+width:400px;
+height:350px;
+margin:auto;
+margin-top:20px;
+}
+
+/* HOUSE OUTLINE */
+
+.houseOutline{
+position:absolute;
+bottom:0;
+left:50%;
+transform:translateX(-50%);
+width:200px;
+height:180px;
+border:3px dashed rgba(255,255,255,.3);
+}
+
+/* HOUSE PARTS */
+
+.part{
+position:absolute;
+left:50%;
+transform:translateX(-50%);
+display:none;
+}
+
+
+#foundation{
+bottom:0;
+width:200px;
+height:20px;
+background:#777;
+}
+
+#walls{
+bottom:20px;
+width:160px;
+height:100px;
+background:#0b79c3;
+}
+
+#roof{
+bottom:120px;
+width:0;
+height:0;
+border-left:90px solid transparent;
+border-right:90px solid transparent;
+border-bottom:60px solid #563621;
+}
+
+#door{
+bottom:20px;
+width:30px;
+height:50px;
+background:#ba2222;
+}
+
+/* STORM */
+
+.cloud{
+position:absolute;
+background:#444;
+border-radius:50px;
+opacity:0;
+transition:.5s;
+}
+
+#c1{top:10px;left:110px;width:120px;height:60px;}
+#c2{top:20px;left:80px;width:150px;height:70px;}
+#c3{top:30px;left:120px;width:170px;height:80px;}
+#c4{top:40px;left:60px;width:200px;height:90px;}
+
+#lightning{
+position:absolute;
+top:80px;
+left:180px;
+font-size:40px;
+opacity:0;
+}
+
+/* SUN SCENE */
+
+#sunScene{
+position:absolute;
+top:20px;
+left:120px;
+display:none;
+}
+
+.sunCloud{
+width:120px;
+height:60px;
+background:white;
+border-radius:60px;
+position:absolute;
+}
+
+.sun{
+width:50px;
+height:50px;
+background:gold;
+border-radius:50%;
+position:absolute;
+top:-20px;
+left:80px;
+}
+
+/* LETTER BANK */
+
+#letterBank{
+position:absolute;
+right:-180px;
+top:60px;
+width:150px;
+background:#1b1e21;
+border:2px solid #555;
+padding:10px;
+border-radius:8px;
+}
+
+#letters{
+letter-spacing:5px;
+font-size:18px;
+}
+
+input{
+margin-top:15px;
+padding:5px;
+}
+
+button{
+padding:6px 10px;
+margin-left:5px;
+color:rgb(216, 120, 10);
+background:#1b1e21;
+}
+
+#playAgain{
+display:none;
+margin-top:15px;
+color:rgb(216, 120, 10);
+background:#1b1e21;
+}
+
+</style>
+</head>
+
+<body>
+
+
+
+<h1>Build The House</h1>
+<nav>
+    <a href="my_web_scratch.html">Triathlon Page</a>
+</nav>
+<div class="scene">
+
+<div class="houseOutline"></div>
+
+<div id="foundation" class="part"></div>
+<div id="walls" class="part"></div>
+<div id="roof" class="part"></div>
+<div id="door" class="part"></div>
+
+<div id="c1" class="cloud"></div>
+<div id="c2" class="cloud"></div>
+<div id="c3" class="cloud"></div>
+<div id="c4" class="cloud"></div>
+
+<div id="lightning">⚡</div>
+
+<div id="sunScene">
+<div class="sunCloud"></div>
+<div class="sun"></div>
+</div>
+
+<div id="letterBank">
+<h3>Letters</h3>
+<div id="letters"></div>
+</div>
+
+</div>
+
+<h2 id="word"></h2>
+
+<input id="letter" maxlength="1">
+<button onclick="guess()">Guess</button>
+
+<div id="message"></div>
+
+<button id="playAgain" onclick="resetGame()">Play Again</button>
+
+<script>
+
+const words=["garage","hammer","window","cement","ladder","factory"]
+
+let word
+let display
+let correctPieces
+let wrong
+let guessedLetters=[]
+let maxWrong=4
+
+startGame()
+
+function startGame(){
+
+word=words[Math.floor(Math.random()*words.length)]
+
+display=[]
+correctPieces=0
+wrong=0
+guessedLetters=[]
+
+for(let i=0;i<word.length;i++) display.push("_")
+
+updateWord()
+
+document.getElementById("letters").innerText=""
+document.getElementById("sunScene").style.display="none"
+document.getElementById("message").innerText=""
+document.getElementById("playAgain").style.display="none"
+
+for(let i=1;i<=4;i++){
+document.getElementById("c"+i).style.opacity=0
+}
+
+}
+
+function updateWord(){
+document.getElementById("word").innerText=display.join(" ")
+}
+
+function guess(){
+
+let input=document.getElementById("letter")
+let letter=input.value.toLowerCase()
+input.value=""
+
+if(!letter)return
+if(guessedLetters.includes(letter)) return
+
+guessedLetters.push(letter)
+document.getElementById("letters").innerText=guessedLetters.join(" ")
+
+if(word.includes(letter)){
+
+for(let i=0;i<word.length;i++){
+if(word[i]==letter && display[i]=="_"){
+display[i]=letter
+buildHouse()
+}
+}
+
+updateWord()
+
+if(!display.includes("_")) winGame()
+
+}else{
+
+wrong++
+growStorm()
+
+if(wrong>=2) lightning()
+
+if(wrong>=maxWrong) loseGame()
+
+}
+
+}
+
+function buildHouse(){
+
+const pieces=["foundation","walls","roof","door"]
+
+if(correctPieces<pieces.length){
+document.getElementById(pieces[correctPieces]).style.display="block"
+correctPieces++
+}
+
+}
+
+function growStorm(){
+
+let cloud=document.getElementById("c"+wrong)
+cloud.style.opacity=.9
+
+}
+
+function lightning(){
+
+let bolt=document.getElementById("lightning")
+bolt.style.opacity=1
+
+setTimeout(()=>{
+bolt.style.opacity=0
+},400)
+
+}
+
+function hideStorm(){
+
+for(let i=1;i<=4;i++){
+document.getElementById("c"+i).style.opacity=0
+}
+
+}
+
+function winGame(){
+
+hideStorm()
+
+document.getElementById("sunScene").style.display="block"
+
+document.getElementById("message").innerText="🏠 House Completed!"
+
+document.getElementById("playAgain").style.display="inline-block"
+
+}
+
+function loseGame(){
+
+document.getElementById("message").innerText="⛈️ Storm destroyed the house!"
+
+let parts=["foundation","walls","roof","door"]
+
+parts.forEach(id=>{
+let el=document.getElementById(id)
+el.style.transition="1s"
+el.style.transform="translateX(-50%) rotate(25deg)"
+el.style.opacity="0"
+})
+
+document.getElementById("playAgain").style.display="inline-block"
+
+}
+
+function resetGame(){
+location.reload()
+}
+
+</script>
+
+</body>
+</html>
